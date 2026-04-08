@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIO Monitoring Dashboard</title>
+    <style>
+    :root {
+        --bg-gradient-start: #0f1419;
+        --bg-gradient-end: #1a1f2e;
+        --header-gradient-start: #1e3a5f;
+        --header-gradient-end: #2d5a7b;
+        --header-border: #3d7ea6;
+        --title-gradient-start: #64b5f6;
+        --title-gradient-end: #42a5f5;
+        --text-primary: #e1e8ed;
+        --text-secondary: #b0bec5;
+        --card-bg: rgba(30, 41, 59, 0.7);
+        --card-border: rgba(100, 181, 246, 0.1);
+        --section-title: #64b5f6;
+        --section-border: rgba(100, 181, 246, 0.3);
+        --subsection-title: #90caf9;
+        --data-border: rgba(255, 255, 255, 0.05);
+        --canvas-bg: #0a0e14;
+        --button-primary-start: #2196F3;
+        --button-primary-end: #1976D2;
+    }
+
+    body.light-mode {
+        --bg-gradient-start: #e3f2fd;
+        --bg-gradient-end: #bbdefb;
+        --header-gradient-start: #1976d2;
+        --header-gradient-end: #1565c0;
+        --header-border: #0d47a1;
+        --title-gradient-start: #ffffff;
+        --title-gradient-end: #e3f2fd;
+        --text-primary: #212121;
+        --text-secondary: #616161;
+        --card-bg: rgba(255, 255, 255, 0.9);
+        --card-border: rgba(33, 150, 243, 0.2);
+        --section-title: #1976d2;
+        --section-border: rgba(33, 150, 243, 0.3);
+        --subsection-title: #1565c0;
+        --data-border: rgba(0, 0, 0, 0.08);
+        --canvas-bg: #f5f5f5;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+        color: var(--text-primary);
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    .header {
+        background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
+        padding: 0.4rem 0.8rem;
+        border-bottom: 2px solid var(--header-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .header h1 {
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        background: linear-gradient(135deg, var(--title-gradient-start), var(--title-gradient-end));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .theme-toggle {
+        padding: 0.3rem 0.6rem;
+        background: rgba(255, 255, 255, 0.15);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.7rem;
+        color: white;
+    }
+
+    .container {
+        max-width: 1800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.3rem;
+    }
+
+    .card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid var(--card-border);
+    }
+
+    .card h2 {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        color: var(--section-title);
+        border-bottom: 2px solid var(--section-border);
+        padding-bottom: 0.5rem;
+    }
+
+    .card h3 {
+        font-size: 1rem;
+        margin: 1rem 0 0.5rem;
+        color: var(--subsection-title);
+    }
+    
+    .controls-section {
+    grid-column: 1 / -1;
+    }
+
+    .data-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--data-border);
+    }
+
+    .data-label {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .data-value {
+        font-weight: 600;
+        font-family: 'Courier New', monospace;
+    }
+
+    #threejs-container {
+        width: 100%;
+        height: 250px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--canvas-bg);
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .button {
+        padding: 0.8rem 1.5rem;
+        background: linear-gradient(135deg, var(--button-primary-start), var(--button-primary-end));
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    .button.danger {
+        background: #d32f2f;
+    }
+
+    .button.warning {
+        background: #f57c00;
+    }
+
+    .button.small {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding: 1rem;
+        }
+        #threejs-container {
+            height: 220px;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="header">
+
+        <h1>🚁 VIO Monitoring Dashboard</h1>
+                    </a>
+        Access on the computer at http://{{ ip }}:5000
+        </a>
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark Mode">
+            <span id="themeIcon">☀️</span>
+        </button>
+        <p>
+    
+
+</p>
+	<a href="/download_log">
+	    <button class="button small">View All Logs</button>
+	</a>   	
+    <a id="downloadLogLink" class="button small" href="/download_log" style="text-decoration:none;">
+                Download Log
+    </a>
+    <button class="button" id="logToggleBtn" type="button">
+    <span id="logBtnText">Start Logging</span>
+    </button>
+	    <div class="vins-controls">  	
+	        <button class="button small" id="startVINSBtn">Start VINS</button>
+    	    <button class="button small" id="stopVINSBtn">Stop VINS</button>
+	    </div>
+    </div>
+    
+    <div class="container">
+            <div class="grid">
+
+            <div class="card">
+                <h2>📍 VIO Pose</h2>
+                <div class="data-row">
+                    <span class="data-label">X:</span>
+                    <span class="data-value" id="odom_x">--</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Y:</span>
+                    <span class="data-value" id="odom_y">--</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Z:</span>
+                    <span class="data-value" id="odom_z">--</span>
+                </div>
+                
+                <h3>Orientation</h3>
+                <div class="data-row">
+                    <span class="data-label">Roll:</span>
+                    <span class="data-value" id="odom_roll">--</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Pitch:</span>
+                    <span class="data-value" id="odom_pitch">--</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Yaw:</span>
+                    <span class="data-value" id="odom_yaw">--</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>💻 System Stats</h2>
+                <div class="data-row">
+                    <span class="data-label">CPU Usage:</span>
+                    <span class="data-value" id="cpu_usage">--</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Memory Usage:</span>
+                    <span class="data-value" id="memory_usage">--</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Temperature:</span>
+                    <span class="data-value" id="temperature">--</span>
+                </div>
+
+                <p id="rebooting" style="color: #ff9800; font-weight: 600; margin-top: 1rem;"></p>
+            </div>
+
+            <div class="card">
+                <h2>🏥 Health Monitor</h2>
+                <div class="data-row">
+                    <span class="data-label">Feature Tracking Status:</span>
+                    <span id="health_status" class="health-status">--</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">IMU Status:</span>
+                    <span class="data-label">✅</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Features:</span>
+                    <span class="data-value" id="features_count">--</span>
+                </div>
+                <p id="health_reason" style="color: #ff9800; margin-top: 1rem; font-style: italic;"></p>
+            </div>
+
+            <div class="card">
+                <h2>🔋 Battery Status</h2>
+                <div class="data-row">
+                    <span class="data-label">Voltage:</span>
+                    <span class="data-value" id="mav_battery_voltage">--</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Current:</span>
+                    <span class="data-value" id="mav_battery_current">--</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Battery Percentage Used In This Session:</span>
+                    <span class="data-value" id="mav_battery_percentage">--</span>
+                </div>
+            </div>
+
+            <div class="card controls-section">
+                <h2>⚙️ System Control</h2>
+                <div class="button-group">
+                    <button class="button danger" onclick="rebootSystem()">Reboot System</button>
+                    <button class="button danger" onclick="shutdownSystem()">Shutdown System</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const themeIcon = document.getElementById('themeIcon');
+            const isLightMode = document.body.classList.contains('light-mode');
+            themeIcon.innerText = isLightMode ? '🌙' : '☀️';
+            
+            // Save preference
+            localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
+        }
+
+        function loadThemePreference() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                document.getElementById('themeIcon').innerText = '🌙';
+            }
+        }
+
+        // Data fetching functions
+        function fetchOdom() {
+            fetch('/odom')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('odom_x').innerText = data.x !== undefined ? data.x.toFixed(3) : '--';
+                    document.getElementById('odom_y').innerText = data.y !== undefined ? data.y.toFixed(3) : '--';
+                    document.getElementById('odom_z').innerText = data.z !== undefined ? data.z.toFixed(3) : '--';
+                    document.getElementById('odom_roll').innerText = data.roll !== undefined ? data.roll.toFixed(2) + '°' : '--';
+                    document.getElementById('odom_pitch').innerText = data.pitch !== undefined ? data.pitch.toFixed(2) + '°' : '--';
+                    document.getElementById('odom_yaw').innerText = data.yaw !== undefined ? data.yaw.toFixed(2) + '°' : '--';
+                })
+                .catch(error => console.error("Error fetching odometry data:", error));
+        }
+
+        function fetchSystemStats() {
+            fetch('/system_stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('cpu_usage').innerText = data.cpu_usage + '%';
+                    document.getElementById('memory_usage').innerText = data.memory_usage + '%';
+                    document.getElementById('temperature').innerText = data.temperature + '°C';
+                    document.getElementById('rebooting').innerText = data.rebooting ? '⚠️ System is rebooting...' : '';
+                })
+                .catch(error => console.error("Error fetching system stats:", error));
+        }
+
+        function fetchHealthStatus() {
+            fetch('/health_status')
+                .then(response => response.json())
+                .then(data => {
+                    const healthStatusElem = document.getElementById('health_status');
+                    healthStatusElem.innerText = data.health_status || '--';
+                    healthStatusElem.className = 'health-status ' + (data.health_status === 'Healthy' ? 'healthy' : 'unhealthy');
+                    document.getElementById('health_reason').innerText = data.health_reason || '';
+                })
+                .catch(error => console.error("Error fetching health status:", error));
+        }
+        
+
+        function fetchFeaturesCount() {
+            fetch('/features_count')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('features_count').innerText = data.features_count || '--';
+                })
+                .catch(error => console.error("Error fetching features count:", error));
+        }
+
+        function fetchPathLength() {
+            fetch('/path_length')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('path_length').innerText = data.path_length ? data.path_length.toFixed(3) + ' m' : '--';
+                })
+                .catch(error => console.error("Error fetching path length:", error));
+        }
+
+        function setBadge(elementId, value) {
+            const elem = document.getElementById(elementId);
+            elem.innerText = value !== undefined ? (value ? 'Yes' : 'No') : '--';
+            elem.className = 'badge ' + (value ? 'success' : 'danger');
+        }
+
+        function fetchMavBattery() {
+            fetch('/mav_battery')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('mav_battery_voltage').innerText = data.voltage !== undefined ? data.voltage.toFixed(2) + ' V' : '--';
+                    document.getElementById('mav_battery_current').innerText = data.current !== undefined ? data.current.toFixed(2) + ' mA' : '--';
+                    document.getElementById('mav_battery_percentage').innerText = data.percentage !== undefined ? data.percentage.toFixed(1) + '%' : '--';
+                    
+                    const statusElem = document.getElementById('mav_battery_status');
+                    statusElem.innerText = getBatteryStatus(data.status);
+                    statusElem.className = 'badge ' + getBatteryStatusClass(data.status);
+                    
+                    const healthElem = document.getElementById('mav_battery_health');
+                    healthElem.innerText = getBatteryHealth(data.health);
+                    healthElem.className = 'badge ' + getBatteryHealthClass(data.health);
+                })
+                .catch(error => console.error("Error fetching MAVLink battery data:", error));
+        }
+
+        function getBatteryStatus(status) {
+            const statuses = ['Unknown', 'Charging', 'Discharging', 'Not Charging', 'Full'];
+            return statuses[status] || 'Unknown';
+        }
+
+        function getBatteryStatusClass(status) {
+            if (status === 1) return 'info';
+            if (status === 4) return 'success';
+            if (status === 2) return 'warning';
+            return 'danger';
+        }
+
+        function getBatteryHealth(health) {
+            const healths = ['Unknown', 'Good', 'Overheat', 'Dead', 'Overvoltage', 'Unspec Failure', 'Cold', 'Watchdog Timer Expire', 'Safety Timer Expire'];
+            return healths[health] || 'Unknown';
+        }
+
+        function getBatteryHealthClass(health) {
+            if (health === 1) return 'success';
+            if (health === 6) return 'info';
+            return 'danger';
+        }
+
+        function rebootSystem() {
+            if (confirm('Are you sure you want to reboot the system?')) {
+                fetch('/reboot_system', { method: 'POST' })
+                    .catch(error => console.error("Error rebooting system:", error));
+            }
+        }
+
+        function shutdownSystem() {
+            if (confirm('Are you sure you want to shutdown the system?')) {
+                fetch('/shutdown_system', { method: 'POST' })
+                    .catch(error => console.error("Error shutting down system:", error));
+            }
+        }
+
+        function restartVio() {
+            if (confirm('Are you sure you want to restart the VIO service?')) {
+                pathPoints = [];
+                fetch('/restart_vio', { method: 'POST' })
+                    .catch(error => console.error("Error restarting VIO service:", error));
+            }
+        }
+        
+        function refreshLogStatus() {
+            fetch('/log_status')
+                .then(r => r.json())
+                .then(s => {
+                loggingEnabled = !!s.enabled;
+                document.getElementById('logBtnText').innerText = loggingEnabled ? 'Stop Logging' : 'Start Logging';
+
+                const link = document.getElementById('downloadLogLink');
+                const name = document.getElementById('logFileName');
+
+                if (s.file) {
+                    name.innerText = `File: ${s.file}`;
+                } else {
+                    name.innerText = '';
+                }
+
+                // Always visible — only disable when invalid
+                if (s.file) {
+                    link.style.pointerEvents = 'auto';
+                    link.style.opacity = '1';
+                } else {
+                    link.style.pointerEvents = 'none';
+                    link.style.opacity = '0.5';
+                }
+                })
+                .catch(err => console.error('log_status error', err));
+            }
+
+	   function toggleLogging() {
+	    const endpoint = loggingEnabled ? '/stop_log' : '/start_log';
+
+	    fetch(endpoint, { method: 'POST' })
+		.then(r => r.json())
+		.then(() => refreshLogStatus())
+		.catch(console.error);
+	}
+        
+
+        // Initialize
+            document.addEventListener('DOMContentLoaded', function() {
+                loadThemePreference();
+
+                // start with slow odom polling (text only)
+                odomTimer = setInterval(fetchOdom, 1000);
+
+                setInterval(fetchSystemStats, 1000);
+                setInterval(fetchHealthStatus, 1000);
+                setInterval(fetchFeaturesCount, 1000);
+                setInterval(fetchPathLength, 1000);
+                setInterval(fetchMavBattery, 1000);
+                const btn = document.getElementById('logToggleBtn');
+                if (btn) {
+                    btn.addEventListener('click', toggleLogging);
+                } else {
+                    console.error("logToggleBtn not found in DOM");
+                }
+
+                refreshLogStatus();
+                setInterval(refreshLogStatus, 1000);
+
+            });
+	document.getElementById('startVINSBtn').addEventListener('click', () => {
+	   path_length = 0;	
+	   fetch('/start_vins', { method: 'POST' })
+  	      .then(r => r.json())
+  	      .then(data => {
+   	      	document.getElementById('vinsStatus').innerText = 'Status: ' + data.status;
+	      })
+    	    .catch(console.error);
+	});
+
+	document.getElementById('stopVINSBtn').addEventListener('click', () => {
+  	  fetch('/stop_vins', { method: 'POST' })
+   	     .then(r => r.json())
+   	     .then(data => {
+     	       	document.getElementById('vinsStatus').innerText = 'Status: ' + data.status;
+  	     })
+             .catch(console.error);
+	});
+    </script>
+</body>
+</html>
