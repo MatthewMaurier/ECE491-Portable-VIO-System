@@ -1,0 +1,5 @@
+target_type: 'aprilgrid'
+tagCols: 5
+tagRows: 6
+tagSize: 0.03        # meters (30mm)
+tagSpacing: 0.3     # spacing_mm / tagSize_mm  (dimensionless)
