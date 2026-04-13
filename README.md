@@ -1,24 +1,46 @@
-This folder contains all of the files modified from a clean install of ROS and OpenVINS installed on a raspberry pi 4 for our project.
+## Project Files and Setup
 
+This folder contains all files modified from a clean installation of **ROS1** and **OpenVINS** on a **Raspberry Pi 4** for this project.
 
-hardware_init.sh is to be added to bashrc to run from startup
+### File Locations
 
-start_vins.sh is to be added to ~/
+Place the files in the following locations:
 
-testapp goes to ~/src/roboeye/
+- **`hardware_init.sh`**  
+  Add this to `~/.bashrc` so it runs on startup.
 
-open_vins and camera_ros go to ~/catkin_ws/
+- **`start_vins.sh`**  
+  Place this in `~/`
 
-ism330publisher.py goes to ~/src
+- **`testapp/`**  
+  Place this in `~/src/roboeye/`
 
-and capstone desktop app goes to the desktop of a local machine
+- **`open_vins/`** and **`camera_ros/`**  
+  Place these in `~/catkin_ws/`
 
-This should allow the project to work on any raspberry pi 4 with ROS1 and OpenVINS.
+- **`ism330publisher.py`**  
+  Place this in `~/src/`
 
-additionally attached are the Altium source files in a zip, and the enclosure file in .f3z 
+- **`capstone desktop app/`**  
+  Place this on the desktop of the local machine.
 
-To calibrate the device, refer to the folder named Calibration.
+### Additional Project Files
 
-(Contribution: Everybody)
+Also included are:
 
-To use the device in it's current state, read Quick Start Guide.pdf
+- **Altium source files** in a `.zip` archive
+- **Enclosure design file** in `.f3z` format
+
+### Calibration
+
+To calibrate the device, refer to the folder named **`Calibration`**.
+
+### Usage
+
+To use the device in its current state, read **`Quick Start Guide.pdf`**.
+
+### Notes
+
+With these files placed in the correct locations, the project should run on any **Raspberry Pi 4** with **ROS1** and **OpenVINS** installed.
+
+**Contribution:** Everybody
